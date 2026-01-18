@@ -14,7 +14,13 @@ class DensityMatrixModel(nn.Module):
     def forward(self, x):
         L_flat = self.fc(x)
         L = L_flat.view(-1, self.dim, self.dim)
-        L = torch.tril(L)  # enforce lower triangular
+        L = torch.tril(L)
+
         rho = L @ L.transpose(-1, -2)
-        rho = rho / torch.trace(rho, dim1=-2, dim2=-1).unsqueeze(-1).unsqueeze(-1)
+
+        trace = rho.diagonal(offset=0, dim1=-2, dim2=-1).sum(-1)
+        rho = rho / trace.unsqueeze(-1).unsqueeze(-1)
+
         return rho
+
+
